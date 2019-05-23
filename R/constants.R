@@ -10,6 +10,7 @@
 .featAssayXAxisNothingTitle <- "None"
 .featAssayXAxisColDataTitle <- "Column data"
 .featAssayXAxisFeatNameTitle <- "Feature name"
+.featAssayXAxisRedDimTitle <- "Reduced dimension"
 
 .featAssayAssay <- "Assay"
 .featAssayXAxis <- "XAxis"
@@ -22,6 +23,7 @@
 # Column data plotting parameters. ----
 .colDataXAxisNothingTitle <- "None"
 .colDataXAxisColDataTitle <- "Column data"
+.colDataXAxisRedDimTitle <- "Reduced dimension"
 
 .colDataYAxis <- "YAxis"
 .colDataXAxis <- "XAxis"
@@ -82,6 +84,11 @@
 .heatMapRelHeightColorBar <- 0.1
 .heatMapRelHeightHeatmap <- 1
 .heatMapRelHeightAnnot <- 0.1
+
+# Reduced dimension x-axis parameters ----
+
+.XAxisRedDimType <- "XAxisRedDimType"
+.XAxisRedDimAxis <- "XAxisRedDim"
 
 # Faceting parameters ----
 

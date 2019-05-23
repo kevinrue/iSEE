@@ -190,18 +190,36 @@
             )
         } else if (mode == "colDataPlot") {
             obj <- plotOutput(panel_name, brush=brush.opts, dblclick=dblclick, click=clickopt, height=panel_height)
+            xaxis_choices <- c(.colDataXAxisNothingTitle, .colDataXAxisColDataTitle)
+
+            if (length(reducedDims(se)) > 0L) {
+                xaxis_choices <- c(xaxis_choices, .colDataXAxisRedDimTitle)
+            }
+            cur_reddim <- param_choices[[.XAxisRedDimType]]
+            max_dim <- ncol(reducedDim(se, cur_reddim))
+            reddim_choices <- seq_len(max_dim)
+            names(reddim_choices) <- reddim_choices
+
             plot.param <- list(
                 selectInput(.input_FUN(.colDataYAxis),
                     label="Column of interest (Y-axis):",
                     choices=column_covariates, selected=param_choices[[.colDataYAxis]]),
                 radioButtons(.input_FUN(.colDataXAxis), label="X-axis:", inline=TRUE,
-                    choices=c(.colDataXAxisNothingTitle, .colDataXAxisColDataTitle),
+                    choices=xaxis_choices,
                     selected=param_choices[[.colDataXAxis]]),
                 .conditional_on_radio(.input_FUN(.colDataXAxis),
                     .colDataXAxisColDataTitle,
                     selectInput(.input_FUN(.colDataXAxisColData),
                         label="Column of interest (X-axis):",
-                        choices=column_covariates, selected=param_choices[[.colDataXAxisColData]]))
+                        choices=column_covariates, selected=param_choices[[.colDataXAxisColData]])),
+                .conditional_on_radio(.input_FUN(.colDataXAxis),
+                    .colDataXAxisRedDimTitle,
+                    selectInput(.input_FUN(.XAxisRedDimType),
+                        label="Reduced dimension type",
+                        choices=red_dim_names, selected=cur_reddim),
+                    selectInput(.input_FUN(.XAxisRedDimAxis),
+                        label="Dimension",
+                        choices=reddim_choices, selected=param_choices[[.XAxisRedDimAxis]]))
             )
         } else if (mode == "featAssayPlot") {
             obj <- plotOutput(panel_name, brush=brush.opts, dblclick=dblclick, click=clickopt, height=panel_height)
@@ -209,7 +227,15 @@
             if (length(column_covariates)) { # As it is possible for thsi plot to be _feasible_ but for no column data to exist.
                 xaxis_choices <- c(xaxis_choices, .featAssayXAxisColDataTitle)
             }
+
             xaxis_choices <- c(xaxis_choices, .featAssayXAxisFeatNameTitle)
+            if (length(reducedDims(se)) > 0L) {
+                xaxis_choices <- c(xaxis_choices, .featAssayXAxisRedDimTitle)
+            }
+            cur_reddim <- param_choices[[.XAxisRedDimType]]
+            max_dim <- ncol(reducedDim(se, cur_reddim))
+            reddim_choices <- seq_len(max_dim)
+            names(reddim_choices) <- reddim_choices
 
             plot.param <- list(
                 selectizeInput(.input_FUN(.featAssayYAxisFeatName),
@@ -230,7 +256,15 @@
                     selectizeInput(.input_FUN(.featAssayXAxisFeatName),
                         label="X-axis feature:", choices=NULL, selected=NULL, multiple=FALSE),
                     selectInput(.input_FUN(.featAssayXAxisRowTable), label=NULL,
-                        choices=tab_by_row, selected=param_choices[[.featAssayXAxisRowTable]]))
+                        choices=tab_by_row, selected=param_choices[[.featAssayXAxisRowTable]])),
+                .conditional_on_radio(.input_FUN(.featAssayXAxis),
+                    .featAssayXAxisRedDimTitle,
+                    selectInput(.input_FUN(.XAxisRedDimType),
+                        label="Reduced dimension type",
+                        choices=red_dim_names, selected=cur_reddim),
+                    selectInput(.input_FUN(.XAxisRedDimAxis),
+                        label="Dimension",
+                        choices=reddim_choices, selected=param_choices[[.XAxisRedDimAxis]]))
             )
         } else if (mode == "rowStatTable") {
             obj <- tagList(dataTableOutput(panel_name), uiOutput(.input_FUN("annotation")))
@@ -1150,7 +1184,7 @@
         deleteFUN <- disabled
         deleteLabel <- .buttonEmptyHistoryLabel
     }
-    
+
     # initialize active "Save" button only if a preconfigured active selection exists
     saveFUN <- identity
     saveLabel <- .buttonSaveLabel

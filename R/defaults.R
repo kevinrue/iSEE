@@ -63,7 +63,7 @@
 #' \item{\code{ShapeByRowData}:}{Character, which column of \code{rowData(se)} should be used for shaping if \code{ShapeBy="Row data"}?
 #' This should refer to a categorical variable, and will default to the first such entry of \code{rowData(se)}.}
 #' }
-#' 
+#'
 #' @section Size parameters:
 #' \describe{
 #' \item{\code{SizeBy}:}{Character, what type of data should be used for controlling size?
@@ -200,7 +200,7 @@ NULL
 #' This should contain a list of lists of brush or lasso objects containing saved alternative selections for each plot.
 #' The outer list should be of length equal to the number of plots.
 #' Again, users are advised to copy-and-paste reported code rather than writing these objects by hand.
-#' 
+#'
 #' If the transmitting plot has multiple selections, the current panel can choose between them using:
 #' \describe{
 #' \item{\code{SelectMultiType}:}{Character, containing \code{"Active"}, which uses the active selection on the transmitting panel;
@@ -234,7 +234,7 @@ NULL
 #'
 #' Only row-based plots (i.e., row data and sample assay plots) can be used for selecting points to supply to row statistics tables, for the same reasons described above.
 #' Similarly, only column-based plots can be used to select plots to transmit to column statistics tables.
-#' 
+#'
 #' @author
 #' Aaron Lun, Kevin Rue-Albrecht
 #'
@@ -371,6 +371,8 @@ featAssayPlotDefaults <- function(se, number) {
     out[[.featAssayXAxis]] <- .featAssayXAxisNothingTitle
     out[[.featAssayXAxisColData]] <- covariates[1]
     out[[.featAssayXAxisFeatName]] <- 1L
+    out[[.XAxisRedDimType]] <- 1L # TODO: refactor with colDataPlot
+    out[[.XAxisRedDimAxis]] <- 1L # TODO: refactor with colDataPlot
     out[[.featAssayXAxisRowTable]] <- .noSelection
     out[[.featAssayYAxisFeatName]] <- 1L
     out[[.featAssayYAxisRowTable]] <- .noSelection
@@ -429,6 +431,8 @@ colDataPlotDefaults <- function(se, number) {
     out[[.colDataYAxis]] <- covariates[1]
     out[[.colDataXAxis]] <- .colDataXAxisNothingTitle
     out[[.colDataXAxisColData]] <- ifelse(length(covariates)==1L, covariates[1], covariates[2])
+    out[[.XAxisRedDimType]] <- 1L
+    out[[.XAxisRedDimAxis]] <- 1L
 
     out <- .add_general_parameters_for_column_plots(out, se)
     if (waszero) out <- out[0,,drop=FALSE]
@@ -984,7 +988,7 @@ heatMapPlotDefaults <- function(se, number) {
     incoming[[.brushData]] <- rep(list(NULL), nrow(incoming))
 
     incoming[[.multiSelectHistory]] <- rep(list(NULL), nrow(incoming))
-    
+
     incoming[[.selectMultiType]] <- .selectMultiActiveTitle
     incoming[[.selectMultiSaved]] <- 0L
 
@@ -1020,23 +1024,23 @@ heatMapPlotDefaults <- function(se, number) {
     if (is.null(any_discrete)) {
         any_discrete <- colnames(colData(se))[.which_groupable(colData(se))]
     }
-    dev_discrete <- any_discrete[1]
-    
+    def_discrete <- any_discrete[1]
+
     any_numeric <- .get_internal_info(se, "column_numeric", empty_fail=FALSE)  # if this is run internally, use precomputed; otherwise recompute.
     if (is.null(any_numeric)) {
         any_numeric <- colnames(colData(se))[.which_numeric(colData(se))]
     }
-    dev_numeric <- any_numeric[1]
+    def_numeric <- any_numeric[1]
 
     incoming[[.colorByField]] <- .colorByNothingTitle
     incoming[[.colorByDefaultColor]] <- "black"
     incoming[[.colorByColData]] <- def_cov
 
     incoming[[.shapeByField]] <- .shapeByNothingTitle
-    incoming[[.shapeByColData]] <- dev_discrete
-    
+    incoming[[.shapeByColData]] <- def_discrete
+
     incoming[[.sizeByField]] <- .sizeByNothingTitle
-    incoming[[.sizeByColData]] <- dev_numeric
+    incoming[[.sizeByColData]] <- def_numeric
 
     incoming[[.colorByRowTable]] <- .noSelection
     incoming[[.colorByFeatName]] <- 1L
@@ -1047,8 +1051,8 @@ heatMapPlotDefaults <- function(se, number) {
 
     incoming[[.facetByRow]] <- FALSE
     incoming[[.facetByColumn]] <- FALSE
-    incoming[[.facetRowsByColData]] <- dev_discrete
-    incoming[[.facetColumnsByColData]] <- dev_discrete
+    incoming[[.facetRowsByColData]] <- def_discrete
+    incoming[[.facetColumnsByColData]] <- def_discrete
 
     return(incoming)
 }
@@ -1064,23 +1068,23 @@ heatMapPlotDefaults <- function(se, number) {
     if (is.null(any_discrete)) {
         any_discrete <- colnames(rowData(se))[.which_groupable(rowData(se))]
     }
-    dev_discrete <- any_discrete[1]
-    
+    def_discrete <- any_discrete[1]
+
     any_numeric <- .get_internal_info(se, "row_numeric", empty_fail=FALSE) # if this is run internally, use precomputed; otherwise recompute.
     if (is.null(any_numeric)) {
         any_numeric <- colnames(rowData(se))[.which_numeric(rowData(se))]
     }
-    dev_numeric <- any_numeric[1]
+    def_numeric <- any_numeric[1]
 
     incoming[[.colorByField]] <- .colorByNothingTitle
     incoming[[.colorByDefaultColor]] <- "black"
     incoming[[.colorByRowData]] <- def_cov
 
     incoming[[.shapeByField]] <- .shapeByNothingTitle
-    incoming[[.shapeByRowData]] <- dev_discrete
-    
+    incoming[[.shapeByRowData]] <- def_discrete
+
     incoming[[.sizeByField]] <- .sizeByNothingTitle
-    incoming[[.sizeByRowData]] <- dev_numeric
+    incoming[[.sizeByRowData]] <- def_numeric
 
     incoming[[.colorByRowTable]] <- .noSelection
     incoming[[.colorByFeatName]] <- 1L
@@ -1091,8 +1095,8 @@ heatMapPlotDefaults <- function(se, number) {
 
     incoming[[.facetByRow]] <- FALSE
     incoming[[.facetByColumn]] <- FALSE
-    incoming[[.facetRowsByRowData]] <- dev_discrete
-    incoming[[.facetColumnsByRowData]] <- dev_discrete
+    incoming[[.facetRowsByRowData]] <- def_discrete
+    incoming[[.facetColumnsByRowData]] <- def_discrete
 
     return(incoming)
 }

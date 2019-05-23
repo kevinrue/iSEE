@@ -118,9 +118,19 @@ names(.all_aes_values) <- .all_aes_names
     )
 
     # Prepare X-axis data.
-    if (param_choices[[.colDataXAxis]]==.colDataXAxisNothingTitle) {
+    if (param_choices[[.colDataXAxis]] == .colDataXAxisNothingTitle) {
         x_lab <- ''
         data_cmds[["x"]] <- "plot.data$X <- factor(character(ncol(se)))"
+    } else if (param_choices[[.colDataXAxis]] == .colDataXAxisRedDimTitle) {
+        reddim_names <- names(.get_internal_info(se, field="red_dim_names"))
+        xlab_type <- reddim_names[param_choices[[.XAxisRedDimType]]]
+        xlab_axis <- sprintf("(Dimension %s)", param_choices[[.XAxisRedDimAxis]])
+        x_lab <- paste(xlab_type, xlab_axis)
+
+        data_cmds[["x"]] <- sprintf(
+            "plot.data$X <- reducedDim(se, %i)[, %i]",
+            param_choices[[.XAxisRedDimType]], param_choices[[.XAxisRedDimAxis]]
+        )
     } else {
         x_lab <- param_choices[[.colDataXAxisColData]]
         data_cmds[["x"]] <- sprintf(
@@ -202,6 +212,16 @@ names(.all_aes_values) <- .all_aes_names
             assay_choice, gene_selected_x
         )
 
+    } else if (param_choices[[.colDataXAxis]] == .colDataXAxisRedDimTitle) {
+        reddim_names <- names(.get_internal_info(se, field="red_dim_names"))
+        xlab_type <- reddim_names[param_choices[[.XAxisRedDimType]]]
+        xlab_axis <- sprintf("(Dimension %s)", param_choices[[.XAxisRedDimAxis]])
+        x_lab <- paste(xlab_type, xlab_axis)
+
+        data_cmds[["x"]] <- sprintf(
+            "plot.data$X <- reducedDim(se, %i)[, %i]",
+            param_choices[[.XAxisRedDimType]], param_choices[[.XAxisRedDimAxis]]
+        )
     } else { # no x axis variable specified: show single violin
         x_lab <- ''
         data_cmds[["x"]] <- "plot.data$X <- factor(character(ncol(se)))"

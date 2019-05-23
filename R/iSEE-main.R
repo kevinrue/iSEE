@@ -578,7 +578,7 @@ iSEE <- function(se,
             to_add <- is.na(m)
             if (any(to_add)) {
                 enc_add <- .split_encoded(input$panel_order[to_add])
-                new_active_panels[to_add,] <- data.frame(Type=enc_add$Type, ID=enc_add$ID, 
+                new_active_panels[to_add,] <- data.frame(Type=enc_add$Type, ID=enc_add$ID,
                     Width=4, Height=500L, stringsAsFactors=FALSE)
             }
 
@@ -591,7 +591,7 @@ iSEE <- function(se,
         })
 
         #######################################################################
-        # Parameter panel observers.
+        # Parameter panel observers. ----
         #######################################################################
 
         for (mode in all_panel_types) {
@@ -625,7 +625,7 @@ iSEE <- function(se,
         }
 
         #######################################################################
-        # Point selection observers.
+        # Point selection observers. ----
         #######################################################################
 
         # Selection choice observer; applicable to all non-custom panels.
@@ -809,7 +809,7 @@ iSEE <- function(se,
         }
 
         #######################################################################
-        # Child propagating observers.
+        # Child propagating observers. ----
         #######################################################################
 
         # Observers to decide whether children need to be replotted.
@@ -949,7 +949,7 @@ iSEE <- function(se,
         }
 
         #######################################################################
-        # Multiple selection observers.
+        # Multiple selection observers. ----
         #######################################################################
 
         for (mode in c(point_plot_types, linked_table_types, "heatMapPlot")) {
@@ -1036,7 +1036,7 @@ iSEE <- function(se,
         }
 
         #######################################################################
-        # Click observers.
+        # Click observers. ----
         #######################################################################
 
         for (mode in point_plot_types) {
@@ -1103,7 +1103,7 @@ iSEE <- function(se,
         }
 
         #######################################################################
-        # Double-click observers.
+        # Double-click observers. ----
         #######################################################################
 
         for (mode in point_plot_types) {
@@ -1267,7 +1267,7 @@ iSEE <- function(se,
         }
 
         #####################################################################
-        # Multiple selection observers.
+        # Multiple selection observers. -----
         #######################################################################
 
         for (mode in point_plot_types) {
@@ -1371,8 +1371,8 @@ iSEE <- function(se,
             # Defining fundamental parameters that destroy brushes/lassos upon being changed.
             protected <- switch(mode,
                 redDimPlot=c(.redDimXAxis, .redDimYAxis),
-                colDataPlot=c(.colDataYAxis, .colDataXAxis, .colDataXAxisColData),
-                featAssayPlot=c(.featAssayAssay, .featAssayXAxisColData),
+                colDataPlot=c(.colDataYAxis, .colDataXAxis, .colDataXAxisColData, .XAxisRedDimType, .XAxisRedDimAxis),
+                featAssayPlot=c(.featAssayAssay, .featAssayXAxisColData, .XAxisRedDimType, .XAxisRedDimAxis),
                 rowDataPlot=c(.colorBySampNameAssay, .rowDataYAxis, .rowDataXAxis, .rowDataXAxisRowData),
                 sampAssayPlot=c(.sampAssayAssay, .sampAssayXAxisRowData))
             protected <- c(protected, .facetByRow, .facetByColumn, .facetRowsByColData, .facetColumnsByColData)
@@ -1700,6 +1700,40 @@ iSEE <- function(se,
                     .regenerate_unselected_plot(mode0, id0, pObjects, rObjects)
                 }, ignoreInit=TRUE)
             })
+        }
+
+        # Sample-level plots need a similar special observer if their x-axis uses reduced dimension results
+        for (mode in c("colDataPlot", "featAssayPlot")){
+            max_plots <- nrow(pObjects$memory[[mode]])
+            for (id in seq_len(max_plots)) {
+                local({
+                    id0 <- id
+                    mode0 <- mode
+                    plot_name <- paste0(mode0, id0)
+                    cur_field <- paste0(plot_name, "_", .XAxisRedDimType)
+                    dim_fieldX <- paste0(plot_name, "_", .XAxisRedDimAxis)
+
+                    observeEvent(input[[cur_field]], {
+                        matched_input <- as(input[[cur_field]], typeof(pObjects$memory[[mode0]][[.XAxisRedDimType]]))
+                        if (identical(matched_input, pObjects$memory[[mode0]][[.XAxisRedDimType]][id0])) {
+                            return(NULL)
+                        }
+                        pObjects$memory[[mode0]][[.XAxisRedDimType]][id0] <- matched_input
+
+                        # Updating the selectInputs as well. This should not trigger re-plotting as the identical() check in the
+                        # corresponding observers should stop the replotting flag from being set.
+                        new_max <- ncol(reducedDim(se, matched_input))
+                        capped_X <- pmin(new_max, pObjects$memory[[mode0]][[.XAxisRedDimAxis]][id0])
+                        pObjects$memory[[mode0]][[.XAxisRedDimAxis]][id0] <- capped_X
+
+                        new_choices <- seq_len(new_max)
+                        names(new_choices) <- new_choices
+                        updateSelectInput(session, dim_fieldX, choices=new_choices, selected=capped_X)
+
+                        .regenerate_unselected_plot(mode0, id0, pObjects, rObjects)
+                    }, ignoreInit=TRUE)
+                })
+            }
         }
 
         #######################################################################
