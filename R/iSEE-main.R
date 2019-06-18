@@ -2286,8 +2286,8 @@ iSEE <- function(se,
         observeEvent(input[["voiceDracarysInput"]], {
             showNotification("Dracarys")
             showModal(modalDialog(
-                size = "s", fade = TRUE, footer = NULL, easyClose = TRUE,
-                HTML('<div align="center"><img src="iSEE/tenor.gif" width="150"></div>')
+                size = "l", fade = TRUE, footer = NULL, easyClose = TRUE,
+                HTML('<div align="center"><img src="iSEE/tenor.gif" width="750"></div>')
             ))
         })
 
