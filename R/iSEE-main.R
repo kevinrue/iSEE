@@ -578,7 +578,7 @@ iSEE <- function(se,
             to_add <- is.na(m)
             if (any(to_add)) {
                 enc_add <- .split_encoded(input$panel_order[to_add])
-                new_active_panels[to_add,] <- data.frame(Type=enc_add$Type, ID=enc_add$ID, 
+                new_active_panels[to_add,] <- data.frame(Type=enc_add$Type, ID=enc_add$ID,
                     Width=4, Height=500L, stringsAsFactors=FALSE)
             }
 
@@ -2281,6 +2281,14 @@ iSEE <- function(se,
 
         observeEvent(input[["voiceGoodBoyInput"]], {
             showNotification(HTML("<p style='font-size:300%; text-align:right;'>&#x1F357; &#x1F436;</p>"), type="message")
+        })
+
+        observeEvent(input[["voiceDracarysInput"]], {
+            showNotification("Dracarys")
+            showModal(modalDialog(
+                size = "s", fade = TRUE, footer = NULL, easyClose = TRUE,
+                HTML('<div align="center"><img src="iSEE/tenor.gif" width="150"></div>')
+            ))
         })
 
         #######################################################################

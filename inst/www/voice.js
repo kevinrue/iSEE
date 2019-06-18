@@ -13,6 +13,7 @@ var initVoice = function() {
     if (annyang) {
         var showActivePanelCount = 0;
         var goodBoyCount = 0;
+        var dracarysCount = 0;
         var commands = {
             'show panel *panel': function(panel) {
                 Shiny.onInputChange(voiceShowPanelInput, panel);
@@ -46,6 +47,10 @@ var initVoice = function() {
             'good girl': function() {
                 goodBoyCount++;
                 Shiny.onInputChange("voiceGoodBoyInput", goodBoyCount);
+            },
+            'dracarys': function() {
+                dracarysCount++;
+                Shiny.onInputChange("voiceDracarysInput", goodBoyCount);
             }
         };
         annyang.addCommands(commands);
