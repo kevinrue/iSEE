@@ -50,7 +50,7 @@ var initVoice = function() {
             },
             'dracarys': function() {
                 dracarysCount++;
-                Shiny.onInputChange("voiceDracarysInput", goodBoyCount);
+                Shiny.onInputChange("voiceDracarysInput", dracarysCount);
             }
         };
         annyang.addCommands(commands);
